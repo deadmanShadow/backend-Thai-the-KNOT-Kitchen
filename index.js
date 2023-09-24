@@ -29,10 +29,28 @@ async function run() {
     await client.connect();
 
     const menuCollection = client.db("knotDb").collection("menu");
+    const reviewCollection = client.db("knotDb").collection("reviews");
+    const cartCollection = client.db("knotDb").collection("carts");
+
+
 
     app.get('/menu', async(req, res) => {
         const result = await menuCollection.find().toArray();
         res.send(result);
+    })
+
+
+    app.get('/reviews', async(req, res) => {
+        const result = await reviewCollection.find().toArray();
+        res.send(result);
+    })
+
+    // carts collection
+    app.post('/carts', async (req,res) => {
+      const item = req.body;
+      console.log(item);
+      const result = await cartCollection.insertOne(item);
+      res.send(result);
     })
 
     // Send a ping to confirm a successful connection
