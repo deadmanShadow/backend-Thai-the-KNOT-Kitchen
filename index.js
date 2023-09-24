@@ -28,35 +28,54 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+    const usersCollection = client.db("bistroDb").collection("users");
     const menuCollection = client.db("knotDb").collection("menu");
     const reviewCollection = client.db("knotDb").collection("reviews");
     const cartCollection = client.db("knotDb").collection("carts");
 
+    // users related apis
+    app.get('/users', async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
 
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email }
+      const existingUser = await usersCollection.findOne(query);
 
-    app.get('/menu', async(req, res) => {
-        const result = await menuCollection.find().toArray();
-        res.send(result);
+      if (existingUser) {
+        return res.send({ message: 'user already exists' })
+      }
+
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+    // menu apis
+    app.get('/menu', async (req, res) => {
+      const result = await menuCollection.find().toArray();
+      res.send(result);
     })
 
-
-    app.get('/reviews', async(req, res) => {
-        const result = await reviewCollection.find().toArray();
-        res.send(result);
+    // review apis
+    app.get('/reviews', async (req, res) => {
+      const result = await reviewCollection.find().toArray();
+      res.send(result);
     })
 
     // carts collection apis
-    app.get('/carts', async(req,res) => {
+    app.get('/carts', async (req, res) => {
       const email = req.query.email;
-      if(!email){
+      if (!email) {
         res.send([]);
       }
-      const query = {email: email};
+      const query = { email: email };
       const result = await cartCollection.find(query).toArray();
       res.send(result);
     })
 
-    app.post('/carts', async (req,res) => {
+    app.post('/carts', async (req, res) => {
       const item = req.body;
       console.log(item);
       const result = await cartCollection.insertOne(item);
@@ -64,9 +83,9 @@ async function run() {
     })
 
     // items delete
-    app.delete('/carts/:id', async (req, res)=> {
+    app.delete('/carts/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(query);
       res.send(result);
     })
@@ -82,9 +101,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
-    res.send('Knot is running');
+  res.send('Knot is running');
 })
 
-app.listen(port, ()=> {
-    console.log(`KNOT is running on port ${port}`);
+app.listen(port, () => {
+  console.log(`KNOT is running on port ${port}`);
 })
